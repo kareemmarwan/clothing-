@@ -30,21 +30,26 @@ export default function DashboardPage() {
       const now = new Date()
 
       switch (period) {
-        case 'today':
+        case 'today': {
           dateFilter = now.toISOString().split('T')[0]
           break
-        case 'week':
+        }
+        case 'week': {
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
           dateFilter = weekAgo.toISOString()
           break
-        case 'month':
+        }
+        case 'month': {
           const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
           dateFilter = monthAgo.toISOString()
           break
+        }
+        default:
+          dateFilter = ''
       }
 
       // Get sales
-      let salesQuery = supabase.from('invoices').select('total_amount, paid_amount')
+      let salesQuery = supabase.from('invoices').select('id, total_amount, paid_amount, created_at')
       if (dateFilter && period !== 'all') {
         salesQuery = salesQuery.gte('created_at', dateFilter)
       }
@@ -61,15 +66,20 @@ export default function DashboardPage() {
       const { data: losses } = await lossesQuery
       const lossValue = losses?.reduce((sum, l) => sum + l.cost_impact, 0) || 0
 
-      // Calculate net profit (simplified)
-      const { data: invoiceItems } = await supabase
-        .from('invoice_items')
-        .select('quantity, line_total, products(cost_price)')
-
+      // Calculate net profit with date filter
       let totalCost = 0
-      invoiceItems?.forEach((item) => {
-        totalCost += (item.products as any)?.cost_price * item.quantity || 0
-      })
+      const invoiceIds = sales?.map(i => i.id) || []
+
+      if (invoiceIds.length > 0) {
+        const { data: invoiceItems } = await supabase
+          .from('invoice_items')
+          .select('quantity, line_total, products(cost_price)')
+          .in('invoice_id', invoiceIds)
+
+        invoiceItems?.forEach((item) => {
+          totalCost += ((item.products as any)?.cost_price || 0) * item.quantity
+        })
+      }
 
       const netProfit = totalSales - totalCost - lossValue
 
@@ -103,11 +113,9 @@ export default function DashboardPage() {
       const { data, error } = await supabase
         .from('invoice_items')
         .select('product_id, quantity, products(name)')
-        .order('quantity', { ascending: false })
 
       if (error) throw error
 
-      // Aggregate by product
       const productMap = new Map<string, { name: string; total: number }>()
       data?.forEach((item) => {
         const productId = item.product_id
@@ -138,7 +146,6 @@ export default function DashboardPage() {
 
       if (error) throw error
 
-      // Group by date
       const dateMap = new Map<string, number>()
       data?.forEach((invoice) => {
         const date = new Date(invoice.created_at).toLocaleDateString('ar-SA')

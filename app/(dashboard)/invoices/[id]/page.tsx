@@ -143,7 +143,7 @@ export default function InvoiceDetailsPage() {
           <p className="text-gray-500">نظام محاسبة تاجر ملابس</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6 print:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 print:mb-8">
           <div>
             <p className="text-sm text-gray-500">رقم الفاتورة</p>
             <p className="font-semibold">{invoice.invoice_number}</p>
@@ -203,7 +203,7 @@ export default function InvoiceDetailsPage() {
         </div>
 
         {/* Payment Summary */}
-        <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
           <div>
             <p className="text-sm text-gray-500">إجمالي الفاتورة</p>
             <p className="text-xl font-bold">{invoice.total_amount}</p>

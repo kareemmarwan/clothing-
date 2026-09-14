@@ -12,29 +12,41 @@ export default function ProfitLossReportPage() {
   const { data: profitData, isLoading } = useQuery({
     queryKey: ['profit-loss', dateFrom, dateTo],
     queryFn: async () => {
-      // Get sales data
-      let salesQuery = supabase
-        .from('invoice_items')
-        .select('quantity, unit_price, line_total, products(cost_price)')
+      // Get invoice items with invoice date
+      let invoiceQuery = supabase
+        .from('invoices')
+        .select('id, created_at')
+        .order('created_at')
 
       if (dateFrom) {
-        salesQuery = salesQuery.gte('created_at', dateFrom)
+        invoiceQuery = invoiceQuery.gte('created_at', dateFrom)
       }
       if (dateTo) {
-        salesQuery = salesQuery.lte('created_at', dateTo + 'T23:59:59')
+        invoiceQuery = invoiceQuery.lte('created_at', dateTo + 'T23:59:59')
       }
 
-      const { data: salesItems, error: salesError } = await salesQuery
-      if (salesError) throw salesError
+      const { data: invoices, error: invoicesError } = await invoiceQuery
+      if (invoicesError) throw invoicesError
 
-      // Calculate profit
+      const invoiceIds = invoices?.map(i => i.id) || []
+
       let totalSales = 0
       let totalCost = 0
 
-      salesItems?.forEach((item) => {
-        totalSales += item.line_total
-        totalCost += (item.products as any)?.cost_price * item.quantity || 0
-      })
+      if (invoiceIds.length > 0) {
+        // Get invoice items for these invoices
+        const { data: salesItems, error: salesError } = await supabase
+          .from('invoice_items')
+          .select('quantity, line_total, products(cost_price)')
+          .in('invoice_id', invoiceIds)
+
+        if (salesError) throw salesError
+
+        salesItems?.forEach((item) => {
+          totalSales += item.line_total
+          totalCost += ((item.products as any)?.cost_price || 0) * item.quantity
+        })
+      }
 
       const grossProfit = totalSales - totalCost
 
@@ -54,7 +66,6 @@ export default function ProfitLossReportPage() {
       if (lossesError) throw lossesError
 
       const totalLosses = losses?.reduce((sum, l) => sum + l.cost_impact, 0) || 0
-
       const netProfit = grossProfit - totalLosses
 
       return {

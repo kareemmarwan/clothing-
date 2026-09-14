@@ -110,6 +110,7 @@ SELECT
   p.cost_price,
   p.sale_price,
   p.quantity_imported,
+  p.created_at,
   COALESCE(SUM(CASE WHEN im.movement_type = 'import' THEN im.quantity ELSE 0 END), 0) AS total_imported,
   COALESCE(SUM(CASE WHEN im.movement_type = 'sale' THEN im.quantity ELSE 0 END), 0) AS total_sold,
   COALESCE(SUM(CASE WHEN im.movement_type = 'loss' THEN im.quantity ELSE 0 END), 0) AS total_lost,
@@ -121,7 +122,7 @@ SELECT
     AS remaining
 FROM products p
 LEFT JOIN inventory_movements im ON p.id = im.product_id
-GROUP BY p.id, p.name, p.category, p.type, p.size, p.color, p.cost_price, p.sale_price, p.quantity_imported;
+GROUP BY p.id, p.name, p.category, p.type, p.size, p.color, p.cost_price, p.sale_price, p.quantity_imported, p.created_at;
 
 -- Function to update invoice amounts when payment is added
 CREATE OR REPLACE FUNCTION update_invoice_on_payment()

@@ -234,6 +234,7 @@ export interface Database {
           cost_price: number
           sale_price: number
           quantity_imported: number
+          created_at: string
           total_imported: number
           total_sold: number
           total_lost: number

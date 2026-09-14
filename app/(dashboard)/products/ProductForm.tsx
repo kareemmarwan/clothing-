@@ -129,7 +129,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         error={errors.name?.message}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             الفئة
@@ -155,7 +155,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="المقاس"
           {...register('size')}
@@ -169,7 +169,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="سعر التكلفة"
           type="number"
