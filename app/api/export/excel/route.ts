@@ -38,8 +38,9 @@ export async function GET(request: Request) {
     }
 
     const buffer = await workbook.xlsx.writeBuffer()
+    const uint8Array = new Uint8Array(buffer)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(uint8Array, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="${reportType}-report.xlsx"`,
